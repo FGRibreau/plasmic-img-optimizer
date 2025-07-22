@@ -1,21 +1,29 @@
-pub mod cache;
 pub mod error;
+
+#[cfg(feature = "native")]
+pub mod cache;
+#[cfg(feature = "native")]
 pub mod image_processor;
 
 #[cfg(feature = "worker")]
 pub mod worker;
 
+#[cfg(feature = "native")]
 use actix_web::{web, HttpResponse, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+#[cfg(feature = "native")]
 use std::sync::Arc;
+#[cfg(feature = "native")]
 use tokio::sync::RwLock;
 use url::Url;
 
+#[cfg(feature = "native")]
 use cache::ImageCache;
 use error::{AppError, AppResult};
+#[cfg(feature = "native")]
 use image_processor::ImageProcessor;
 
 pub const MAX_WIDTH: u32 = 3840;
@@ -40,12 +48,14 @@ pub struct ErrorResponse {
     pub message: Option<String>,
 }
 
+#[cfg(feature = "native")]
 #[derive(Clone)]
 pub struct AppState {
     pub cache: Arc<RwLock<ImageCache>>,
     pub client: reqwest::Client,
 }
 
+#[cfg(feature = "native")]
 pub async fn health_check() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "status": "ok",
@@ -53,6 +63,7 @@ pub async fn health_check() -> Result<HttpResponse> {
     })))
 }
 
+#[cfg(feature = "native")]
 pub async fn list_errors() -> Result<HttpResponse> {
     let errors = AppError::list_all_errors();
     Ok(HttpResponse::Ok().json(serde_json::json!({
