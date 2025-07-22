@@ -1,0 +1,11 @@
+target/
+cache/
+.git/
+.github/
+*.md
+benchmark.js
+wrangler.toml
+.gitignore
+.dockerignore
+Dockerfile
+.claude
