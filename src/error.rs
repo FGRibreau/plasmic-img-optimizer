@@ -85,10 +85,7 @@ impl AppError {
                 "Try a different image or check if the image file is corrupted".to_string()
             }
             AppError::InvalidImageFormat { format } => {
-                format!(
-                    "Use one of the supported formats: jpeg, jpg, png, webp. Got '{}'",
-                    format
-                )
+                format!("Use one of the supported formats: jpeg, jpg, png, webp. Got '{format}'")
             }
             AppError::ImageTooLarge => {
                 "Reduce the image dimensions or use a smaller source image".to_string()
@@ -98,7 +95,7 @@ impl AppError {
                 "Provide a quality value between 1 and 100".to_string()
             }
             AppError::MissingRequiredParameter { param } => {
-                format!("Include the '{}' parameter in your request", param)
+                format!("Include the '{param}' parameter in your request")
             }
             AppError::CacheError { .. } => {
                 "Try again later or contact support if the issue persists".to_string()

@@ -16,13 +16,13 @@ impl ImageProcessor {
         let reader = ImageReader::new(Cursor::new(image_data))
             .with_guessed_format()
             .map_err(|e| AppError::ImageProcessingFailed {
-                reason: format!("Failed to read image: {}", e),
+                reason: format!("Failed to read image: {e}"),
             })?;
 
         let mut img = reader
             .decode()
             .map_err(|e| AppError::ImageProcessingFailed {
-                reason: format!("Failed to decode image: {}", e),
+                reason: format!("Failed to decode image: {e}"),
             })?;
 
         // Resize if needed
@@ -85,13 +85,13 @@ fn encode_image(img: &DynamicImage, format: OutputFormat, quality: u8) -> AppRes
             rgb_img
                 .write_to(&mut cursor, ImageFormat::Jpeg)
                 .map_err(|e| AppError::ImageProcessingFailed {
-                    reason: format!("Failed to encode JPEG: {}", e),
+                    reason: format!("Failed to encode JPEG: {e}"),
                 })?;
         }
         OutputFormat::Png => {
             img.write_to(&mut cursor, ImageFormat::Png).map_err(|e| {
                 AppError::ImageProcessingFailed {
-                    reason: format!("Failed to encode PNG: {}", e),
+                    reason: format!("Failed to encode PNG: {e}"),
                 }
             })?;
         }

@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
         client: reqwest::Client::new(),
     };
 
-    info!("Starting image optimizer service on port {}", port);
+    info!("Starting image optimizer service on port {port}");
 
     HttpServer::new(move || {
         App::new()
@@ -50,7 +50,7 @@ async fn main() -> std::io::Result<()> {
                 web::get().to(direct_image_handler),
             )
     })
-    .bind(format!("0.0.0.0:{}", port))?
+    .bind(format!("0.0.0.0:{port}"))?
     .run()
     .await
 }
