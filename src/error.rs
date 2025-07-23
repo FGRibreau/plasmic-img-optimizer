@@ -241,4 +241,3 @@ impl ResponseError for AppError {
         }
     }
 }
-

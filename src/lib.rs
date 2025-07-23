@@ -1,13 +1,13 @@
-pub mod error;
 pub mod cache;
+pub mod error;
 pub mod image_processor;
 
+use error::{AppError, AppResult};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use url::Url;
-use error::{AppError, AppResult};
 
 use {
     actix_web::{web, HttpResponse, Result},

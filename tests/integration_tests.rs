@@ -362,7 +362,10 @@ async fn test_plasmic_compatible_webp_format() {
     // Test WebP format conversion (important for Plasmic)
     let image_url = format!("{}/plasmic-test.png", &mock_server.uri());
     let req = test::TestRequest::get()
-        .uri(&format!("/img-optimizer/v1/img?src={}&f=webp&q=80", &image_url))
+        .uri(&format!(
+            "/img-optimizer/v1/img?src={}&f=webp&q=80",
+            &image_url
+        ))
         .to_request();
     let resp = test::call_service(&mut app, req).await;
 
@@ -404,7 +407,10 @@ async fn test_plasmic_compatible_resize_and_format() {
     // Test resize + format conversion (common Plasmic use case)
     let image_url = format!("{}/resize-format.png", &mock_server.uri());
     let req = test::TestRequest::get()
-        .uri(&format!("/img-optimizer/v1/img?src={}&w=800&f=jpeg&q=90", &image_url))
+        .uri(&format!(
+            "/img-optimizer/v1/img?src={}&w=800&f=jpeg&q=90",
+            &image_url
+        ))
         .to_request();
     let resp = test::call_service(&mut app, req).await;
 
@@ -429,7 +435,7 @@ async fn test_plasmic_error_format_rfc7807() {
 
     assert_eq!(resp.status(), 400);
     let body: serde_json::Value = test::read_body_json(resp).await;
-    
+
     // Verify RFC7807 Problem Details format
     assert!(body["type"].is_string());
     assert!(body["title"].is_string());
