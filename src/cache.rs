@@ -1,23 +1,11 @@
 use std::path::PathBuf;
-#[cfg(feature = "native")]
 use tokio::fs;
-#[cfg(feature = "native")]
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-#[cfg(feature = "worker")]
-use worker::kv::KvStore;
-
-#[cfg(feature = "native")]
 pub struct ImageCache {
     cache_dir: PathBuf,
 }
 
-#[cfg(feature = "worker")]
-pub struct ImageCache {
-    kv: KvStore,
-}
-
-#[cfg(feature = "native")]
 impl ImageCache {
     pub fn new(cache_dir: PathBuf) -> Self {
         Self { cache_dir }
@@ -48,25 +36,5 @@ impl ImageCache {
         if let Ok(mut file) = fs::File::create(&file_path).await {
             let _ = file.write_all(&data).await;
         }
-    }
-}
-
-#[cfg(feature = "worker")]
-impl ImageCache {
-    pub fn new_kv(kv: KvStore) -> Self {
-        Self { kv }
-    }
-
-    pub async fn get(&self, key: &str) -> Option<Vec<u8>> {
-        self.kv.get(key).bytes().await.ok()
-    }
-
-    pub async fn put(&mut self, key: String, data: Vec<u8>) {
-        let _ = self
-            .kv
-            .put(&key, data)
-            .expiration_ttl(86400)
-            .execute()
-            .await;
     }
 }

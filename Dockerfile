@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:1.88-slim as builder
+FROM rust:1.88-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -17,7 +17,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
 # Build the application
-RUN cargo build --release --features native
+RUN cargo build --release
 
 # Runtime stage
 FROM debian:bookworm-slim

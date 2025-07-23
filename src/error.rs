@@ -21,6 +21,9 @@ pub enum AppError {
     #[error("IMG_005: Image too large - Image dimensions exceed maximum allowed size")]
     ImageTooLarge,
 
+    #[error("IMG_006: Invalid image data - The image data is corrupted or invalid")]
+    InvalidImageData,
+
     #[error("VAL_001: Invalid width - Width must be between 1 and 3840, got {width}")]
     InvalidWidth { width: u32 },
 
@@ -64,6 +67,7 @@ impl AppError {
             AppError::ImageProcessingFailed { .. } => "IMG_003",
             AppError::InvalidImageFormat { .. } => "IMG_004",
             AppError::ImageTooLarge => "IMG_005",
+            AppError::InvalidImageData => "IMG_006",
             AppError::InvalidWidth { .. } => "VAL_001",
             AppError::InvalidQuality { .. } => "VAL_002",
             AppError::MissingRequiredParameter { .. } => "VAL_003",
@@ -89,6 +93,9 @@ impl AppError {
             }
             AppError::ImageTooLarge => {
                 "Reduce the image dimensions or use a smaller source image".to_string()
+            }
+            AppError::InvalidImageData => {
+                "Ensure the image file is not corrupted and is a valid image format".to_string()
             }
             AppError::InvalidWidth { .. } => "Provide a width value between 1 and 3840".to_string(),
             AppError::InvalidQuality { .. } => {
@@ -131,6 +138,7 @@ impl AppError {
                 AppError::ImageFetchFailed { .. }
                 | AppError::ImageProcessingFailed { .. }
                 | AppError::ImageTooLarge
+                | AppError::InvalidImageData
                 | AppError::CacheError { .. } => "Processing Error",
                 AppError::InternalServerError => "Internal Server Error",
                 AppError::ServiceUnavailable => "Service Unavailable",
@@ -196,6 +204,7 @@ impl ResponseError for AppError {
                 AppError::ImageFetchFailed { .. }
                 | AppError::ImageProcessingFailed { .. }
                 | AppError::ImageTooLarge
+                | AppError::InvalidImageData
                 | AppError::CacheError { .. } => "Processing Error",
                 AppError::InternalServerError => "Internal Server Error",
                 AppError::ServiceUnavailable => "Service Unavailable",
@@ -225,9 +234,11 @@ impl ResponseError for AppError {
             AppError::ImageFetchFailed { .. }
             | AppError::ImageProcessingFailed { .. }
             | AppError::ImageTooLarge
+            | AppError::InvalidImageData
             | AppError::CacheError { .. } => StatusCode::UNPROCESSABLE_ENTITY,
             AppError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::ServiceUnavailable => StatusCode::SERVICE_UNAVAILABLE,
         }
     }
 }
+

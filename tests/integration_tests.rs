@@ -334,3 +334,108 @@ async fn test_quality_parameter_bounds() {
     let body: serde_json::Value = test::read_body_json(resp).await;
     assert_eq!(body["errorCode"], "VAL_002");
 }
+
+#[actix_rt::test]
+async fn test_plasmic_compatible_webp_format() {
+    let mock_server = MockServer::start().await;
+    let test_image = create_test_png();
+
+    Mock::given(method("GET"))
+        .and(path("/plasmic-test.png"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_bytes(test_image)
+                .insert_header("content-type", "image/png"),
+        )
+        .mount(&mock_server)
+        .await;
+
+    let temp_dir = TempDir::new().unwrap();
+    let app_state = create_app_state(temp_dir.path().to_path_buf());
+
+    let mut app = test::init_service(App::new().app_data(web::Data::new(app_state)).route(
+        "/img-optimizer/v1/img",
+        web::get().to(optimize_image_handler),
+    ))
+    .await;
+
+    // Test WebP format conversion (important for Plasmic)
+    let image_url = format!("{}/plasmic-test.png", &mock_server.uri());
+    let req = test::TestRequest::get()
+        .uri(&format!("/img-optimizer/v1/img?src={}&f=webp&q=80", &image_url))
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+
+    assert!(resp.status().is_success());
+    assert_eq!(
+        resp.headers()
+            .get("content-type")
+            .unwrap()
+            .to_str()
+            .unwrap(),
+        "image/webp"
+    );
+}
+
+#[actix_rt::test]
+async fn test_plasmic_compatible_resize_and_format() {
+    let mock_server = MockServer::start().await;
+    let test_image = create_test_png();
+
+    Mock::given(method("GET"))
+        .and(path("/resize-format.png"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_bytes(test_image)
+                .insert_header("content-type", "image/png"),
+        )
+        .mount(&mock_server)
+        .await;
+
+    let temp_dir = TempDir::new().unwrap();
+    let app_state = create_app_state(temp_dir.path().to_path_buf());
+
+    let mut app = test::init_service(App::new().app_data(web::Data::new(app_state)).route(
+        "/img-optimizer/v1/img",
+        web::get().to(optimize_image_handler),
+    ))
+    .await;
+
+    // Test resize + format conversion (common Plasmic use case)
+    let image_url = format!("{}/resize-format.png", &mock_server.uri());
+    let req = test::TestRequest::get()
+        .uri(&format!("/img-optimizer/v1/img?src={}&w=800&f=jpeg&q=90", &image_url))
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+
+    assert!(resp.status().is_success());
+}
+
+#[actix_rt::test]
+async fn test_plasmic_error_format_rfc7807() {
+    let temp_dir = TempDir::new().unwrap();
+    let app_state = create_app_state(temp_dir.path().to_path_buf());
+
+    let mut app = test::init_service(App::new().app_data(web::Data::new(app_state)).route(
+        "/img-optimizer/v1/img",
+        web::get().to(optimize_image_handler),
+    ))
+    .await;
+
+    let req = test::TestRequest::get()
+        .uri("/img-optimizer/v1/img?src=invalid-url")
+        .to_request();
+    let resp = test::call_service(&mut app, req).await;
+
+    assert_eq!(resp.status(), 400);
+    let body: serde_json::Value = test::read_body_json(resp).await;
+    
+    // Verify RFC7807 Problem Details format
+    assert!(body["type"].is_string());
+    assert!(body["title"].is_string());
+    assert!(body["status"].is_number());
+    assert!(body["detail"].is_string());
+    assert!(body["errorCode"].is_string());
+    assert!(body["howToFix"].is_string());
+    assert!(body["moreInfo"].is_string());
+}

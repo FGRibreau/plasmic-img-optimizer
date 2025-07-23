@@ -3,7 +3,6 @@
 [![CI/CD](https://github.com/fgribreau/plasmic-img-optimizer/workflows/CI%2FCD/badge.svg)](https://github.com/fgribreau/plasmic-img-optimizer/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat&logo=rust&logoColor=white)](https://www.rust-lang.org)
-[![Deploy to Cloudflare Workers](https://img.shields.io/badge/Deploy%20to-Cloudflare%20Workers-f38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com)
 
 A high-performance, API-compatible Rust implementation of the img.plasmic.app image optimization service. Designed for blazing-fast image processing with automatic caching, format conversion, and quality optimization.
 
@@ -23,7 +22,6 @@ A high-performance, API-compatible Rust implementation of the img.plasmic.app im
   
 - 🌐 **Deployment Options**
   - Run as standalone HTTP server
-  - Deploy to Cloudflare Workers
   - Docker container support
   - Automatic CI/CD with GitHub Actions
 
@@ -143,70 +141,11 @@ All errors follow RFC7807 Problem Details standard:
 
 ## 🚢 Deployment
 
-### Cloudflare Workers
-
-This service can be deployed to Cloudflare Workers for global edge deployment.
-
-#### Prerequisites
-
-1. Create a Cloudflare account and get your API token
-2. Set up environment variables:
-
-```bash
-# Add to your GitHub repository secrets
-CLOUDFLARE_API_TOKEN=your_cloudflare_api_token
-```
-
-#### Configuration
-
-1. Update `wrangler.toml` with your settings:
-
-```toml
-[env.production]
-name = "your-worker-name"
-route = { pattern = "img-optimizer.yourdomain.com/*", zone_name = "yourdomain.com" }
-
-[[kv_namespaces]]
-binding = "IMAGE_CACHE"
-id = "your_kv_namespace_id"
-```
-
-2. Create KV namespace:
-
-```bash
-wrangler kv:namespace create "IMAGE_CACHE"
-```
-
-#### Automatic Deployment
-
-Push to the `main` branch to trigger automatic deployment via GitHub Actions:
-
-```bash
-git push origin main
-```
-
-The CI/CD pipeline will:
-1. Run tests
-2. Check code formatting and linting
-3. Build for WebAssembly
-4. Deploy to Cloudflare Workers
-
-#### Manual Deployment
-
-```bash
-# Install wrangler
-npm install -g wrangler
-
-# Build and deploy
-wrangler deploy --env production
-```
-
 ## 🛠️ Development
 
 ### Prerequisites
 
 - Rust 1.70+ (install via [rustup](https://rustup.rs/))
-- Node.js 18+ (for Cloudflare Workers deployment)
 
 ### Building from Source
 
@@ -238,14 +177,12 @@ plasmic-img-optimizer/
 │   ├── error.rs          # Unified error handling
 │   ├── image_processor.rs # Image processing logic
 │   ├── cache.rs          # Caching implementation
-│   └── worker.rs         # Cloudflare Workers entry point
 ├── tests/
 │   └── integration_tests.rs # Comprehensive test suite
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml     # GitHub Actions workflow
 ├── Cargo.toml            # Rust dependencies
-├── wrangler.toml         # Cloudflare Workers config
 └── README.md
 ```
 
@@ -270,11 +207,11 @@ cargo test test_image_optimization
 
 - `PORT`: HTTP server port (default: 3000)
 - `RUST_LOG`: Log level (`error`, `warn`, `info`, `debug`, `trace`)
-- `CACHE_TTL`: Cache time-to-live in seconds (Workers only, default: 86400)
+- `CACHE_TTL`: Cache time-to-live in seconds (default: 86400)
 
 ### Cache Configuration
 
-The service uses file-based caching for the native version and KV storage for Cloudflare Workers. Cache keys are generated using SHA256 hash of:
+The service uses file-based caching. Cache keys are generated using SHA256 hash of:
 - Source URL
 - Width parameter
 - Quality parameter
@@ -305,7 +242,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Inspired by [img.plasmic.app](https://img.plasmic.app)
 - Built with [Actix Web](https://actix.rs/) and [image-rs](https://github.com/image-rs/image)
-- Deployed on [Cloudflare Workers](https://workers.cloudflare.com)
 
 ## 📞 Support
 
