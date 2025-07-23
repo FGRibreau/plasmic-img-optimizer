@@ -48,50 +48,6 @@ jobs:
     - name: Build release
       run: cargo build --release --verbose
 
-  deploy:
-    name: Deploy to Cloudflare Workers
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        target: wasm32-unknown-unknown
-    
-    - name: Install wasm-pack
-      run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-    
-    - name: Install Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-    
-    - name: Install wrangler
-      run: npm install -g wrangler
-    
-    - name: Build for Cloudflare Workers
-      run: |
-        cargo install worker-build
-        worker-build --release
-    
-    - name: Configure wrangler.toml
-      run: |
-        # Replace KV namespace IDs in wrangler.toml with secrets
-        sed -i 's/YOUR_KV_NAMESPACE_ID/${{ secrets.KV_NAMESPACE_ID }}/g' wrangler.toml
-        sed -i 's/YOUR_PREVIEW_KV_NAMESPACE_ID/${{ secrets.KV_PREVIEW_NAMESPACE_ID }}/g' wrangler.toml
-        
-        # Replace route pattern and zone name with environment variables
-        sed -i 's|img-optimizer.example.com|${{ secrets.CLOUDFLARE_ROUTE_PATTERN }}|g' wrangler.toml
-        sed -i 's|zone_name = "example.com"|zone_name = "${{ secrets.CLOUDFLARE_ZONE_NAME }}"|g' wrangler.toml
-    
-    - name: Deploy to Cloudflare Workers
-      env:
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      run: wrangler deploy --env production
-
   docker:
     name: Build and Push Docker Image
     needs: test
